@@ -1,1 +1,2 @@
 # Relational Music Database
+## This database models songs, artists, albums, playlists, and genres. The database also models users as an entity, allowing users to follow, like the songs and playlists in the database.

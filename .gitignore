@@ -1,0 +1,17 @@
+# Checkpoints / data
+data/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.cache
+
+# Virtual environments (if using venv/conda)
+env/
+venv/
+.venv/
+
+# OS files
+.DS_Store
