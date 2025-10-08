@@ -35,7 +35,7 @@ except FileNotFoundError:
 # Albums To Check (populate attributes later) - set
 try:
     with open("data/albums_to_check.json", "r") as f:
-        set(albums_to_check) = json.load(f)
+        albums_to_check = set(json.load(f))
 except FileNotFoundError:
     albums_to_check = set()
 
@@ -118,13 +118,14 @@ def get_playlist_items(playlist_id):
                     break  # no more pages
 
             all_items.extend(results["items"])
-            print(f"🔹 Fetched {len(all_items)} items so far...")
+            print(f"🔹 Fetched {len(all_items)} items so far...\n")
 
         except spotipy.SpotifyException as e:
             if e.http_status == 429:
                 retry_after = int(e.headers.get('Retry-After', 1))
-                print(f"❌ Rate limit hit. Retrying after {retry_after} seconds.")
+                print(f"❌ Rate limit hit. Retrying after {retry_after} seconds.\n")
                 time.sleep(retry_after)
+                print(f"Retrying...\n")
             else:
                 raise
     return all_items
@@ -158,7 +159,7 @@ def checkpoint():
     with open("data/song_playlist.json", "w") as f:
         json.dump({ f"{k[0]}|{k[1]}":v for k, v in song_playlist.items() }, f)
     
-    print(f"💾 Checkpoint: {len(songs)} songs, {len(song_artist)} song-artist relations, {len(song_playlist)} items saved")
+    print(f"💾 Checkpoint: {len(songs)} songs, {len(song_artist)} song-artist relations, {len(song_playlist)} items saved\n")
 
 
 # ------- LOAD DATA -------
@@ -197,8 +198,9 @@ try:
 
         song_index += 1
 except Exception as e:
-    print(f"⚠️ Error occurred: {e}")
+    print(f"⚠️ Error occurred: {e}\n")
+    print(f"✅ Checkpointing...")
     checkpoint()
 
 checkpoint()
-print(f"✅ Successfully saved all playlists from {playlist_name}. Saved {len(songs)} songs")
+print(f"✅ Successfully saved all playlists from {playlist_name}. Saved {len(songs)} songs\n")
