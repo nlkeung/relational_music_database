@@ -1,3 +1,8 @@
+"""
+This script takes in a Spotify playlist ID. It then creates and updates playlist.json. Afterwards, it searches each song in 
+the playlist and adds the songs to songs.json. It also updates song-artist, song-playlist, and song-album relationships.
+Finally, it creates artists_to_check.json and albums_to_check.json, containing a list of IDs that should be added to the database.
+"""
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
@@ -220,10 +225,11 @@ def main():
     playlist_name = playlist_info["name"]
 
     # Populate playlist basic information
-    playlists[playlist_id] = {
-        "playlist_name": playlist_name,
-        "playlist_art_url": playlist_info["images"][0]["url"] if playlist_info["images"] else None
-    }
+    if playlist_id not in playlists:
+        playlists[playlist_id] = {
+            "playlist_name": playlist_name,
+            "playlist_art_url": playlist_info["images"][0]["url"] if playlist_info["images"] else None
+        }
 
     # Iterating through songs in playlist
     playlist_items = get_playlist_items(playlist_id, sp)
