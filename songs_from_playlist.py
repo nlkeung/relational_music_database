@@ -5,64 +5,75 @@ import json
 import time
 import os
 
-os.makedirs("data", exist_ok=True)
 
-auth_manager = SpotifyClientCredentials()
-sp = spotipy.Spotify(auth_manager=auth_manager)
+# Initialize globals
+playlists = {}
+songs = {}
+artists_to_check = set()
+albums_to_check = set()
+song_album = {}
+song_artist = set()
+song_playlist = {}
 
-# --------- ENTITIES ---------
-# Playlists - dict
-try:
-    with open("data/playlists.json", "r") as f:
-        playlists = json.load(f)
-except FileNotFoundError:
-    playlists = {}
+DATA_DIR = "temp_data"
+os.makedirs(f"{DATA_DIR}", exist_ok=True)
 
-# Songs - dict
-try:
-    with open("data/songs.json", "r") as f:
-        songs = json.load(f)
-except FileNotFoundError:
-    songs = {}
 
-# Artists To Check (populate attributes later) - set
-try:
-    with open("data/artists_to_check.json", "r") as f:
-        artists_to_check = set(json.load(f))
-except FileNotFoundError:
-    artists_to_check = set()
+def load_objects():
+    global playlists, songs, artists_to_check, albums_to_check, song_album, song_artist, song_playlist
+    # --------- ENTITIES ---------
+    # Playlists - dict
+    try:
+        with open(f"{DATA_DIR}/playlists.json", "r") as f:
+            playlists = json.load(f)
+    except FileNotFoundError:
+        playlists = {}
 
-# Albums To Check (populate attributes later) - set
-try:
-    with open("data/albums_to_check.json", "r") as f:
-        albums_to_check = set(json.load(f))
-except FileNotFoundError:
-    albums_to_check = set()
+    # Songs - dict
+    try:
+        with open(f"{DATA_DIR}/songs.json", "r") as f:
+            songs = json.load(f)
+    except FileNotFoundError:
+        songs = {}
 
-# ------- RELATIONSHIPS -------
-# Song - Album
-try:
-    with open("data/song_album.json", "r") as f:
-        raw = json.load(f)
-        song_album = {tuple(k.split('|')) : v for k, v in raw.items()}
-except FileNotFoundError:
-    song_album = {}
+    # Artists To Check (populate attributes later) - set
+    try:
+        with open(f"{DATA_DIR}/artists_to_check.json", "r") as f:
+            artists_to_check = set(json.load(f))
+    except FileNotFoundError:
+        artists_to_check = set()
 
-# Song - Artist
-try:
-    with open("data/song_artist.json", "r") as f:
-        raw = json.load(f)
-        song_artist = set(tuple(k.split('|')) for k in raw)
-except FileNotFoundError:
-    song_artist = set()
+    # Albums To Check (populate attributes later) - set
+    try:
+        with open(f"{DATA_DIR}/albums_to_check.json", "r") as f:
+            albums_to_check = set(json.load(f))
+    except FileNotFoundError:
+        albums_to_check = set()
 
-# Song - Playlist
-try:
-    with open("data/song_playlist.json", "r") as f:
-        raw = json.load(f)
-        song_playlist = {tuple(k.split('|')) : v for k, v in raw.items()}
-except FileNotFoundError:
-    song_playlist = {}
+    # ------- RELATIONSHIPS -------
+    # Song - Album
+    try:
+        with open(f"{DATA_DIR}/song_album.json", "r") as f:
+            raw = json.load(f)
+            song_album = {tuple(k.split('|')) : v for k, v in raw.items()}
+    except FileNotFoundError:
+        song_album = {}
+
+    # Song - Artist
+    try:
+        with open(f"{DATA_DIR}/song_artist.json", "r") as f:
+            raw = json.load(f)
+            song_artist = set(tuple(k.split('|')) for k in raw)
+    except FileNotFoundError:
+        song_artist = set()
+
+    # Song - Playlist
+    try:
+        with open(f"{DATA_DIR}/song_playlist.json", "r") as f:
+            raw = json.load(f)
+            song_playlist = {tuple(k.split('|')) : v for k, v in raw.items()}
+    except FileNotFoundError:
+        song_playlist = {}
 
 
 # ------- HELPER FUNCTIONS -------
@@ -103,8 +114,9 @@ def save_song(track):
 """
 Grabs the item objects associated with the playlist ID. This function handles
 rate limits from Spotify API and accumulates all entries across pagination
+Input: playlist_id, Spotify client credentials
 """
-def get_playlist_items(playlist_id):
+def get_playlist_items(playlist_id, sp):
     all_items = []
     results = None
     while True:
@@ -135,72 +147,84 @@ Checkpoint data in case of rate limits or other errors
 """
 def checkpoint():
     # Playlists
-    with open("data/playlists.json", "w") as f:
+    with open(f"{DATA_DIR}/playlists.json", "w") as f:
         json.dump(playlists, f)
     # Songs
-    with open("data/songs.json", "w") as f:
+    with open(f"{DATA_DIR}/songs.json", "w") as f:
         json.dump(songs, f)
     # Artists
-    with open("data/artists_to_check.json", "w") as f:
+    with open(f"{DATA_DIR}/artists_to_check.json", "w") as f:
         json.dump(list(artists_to_check), f)
     # Albums
-    with open("data/albums_to_check.json", "w") as f:
+    with open(f"{DATA_DIR}/albums_to_check.json", "w") as f:
         json.dump(list(albums_to_check), f)
     
     # Relationships
     # Require flattening tuple keys, must reshape later
     # Song-Album
-    with open("data/song_album.json", "w") as f:
+    with open(f"{DATA_DIR}/song_album.json", "w") as f:
         json.dump({ f"{k[0]}|{k[1]}":v for k, v in song_album.items() }, f)
     # Song-Artist
-    with open("data/song_artist.json", "w") as f:
+    with open(f"{DATA_DIR}/song_artist.json", "w") as f:
         json.dump([f"{k[0]}|{k[1]}" for k in song_artist], f)
     # Song-Playlist
-    with open("data/song_playlist.json", "w") as f:
+    with open(f"{DATA_DIR}/song_playlist.json", "w") as f:
         json.dump({ f"{k[0]}|{k[1]}":v for k, v in song_playlist.items() }, f)
     
     print(f"💾 Checkpoint: {len(songs)} songs, {len(song_artist)} song-artist relations, {len(song_playlist)} items saved\n")
 
 
+
+
 # ------- LOAD DATA -------
-playlist_id = "6UeSakyzhiEt4NB3UAd6NQ"
-playlist_info = sp.playlist(playlist_id)
-playlist_name = playlist_info["name"]
+def main():
+    # Log in to Spotify
+    auth_manager = SpotifyClientCredentials()
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+    
+    # Load saved JSONs
+    load_objects()
 
-# Populate playlist basic information
-playlists[playlist_id] = {
-    "playlist_name": playlist_name,
-    "playlist_art_url": playlist_info["images"][0]["url"] if playlist_info["images"] else None
-}
+    playlist_id = "6qSYIKJihVKpWr2HDeHjxS"
+    playlist_info = sp.playlist(playlist_id)
+    playlist_name = playlist_info["name"]
 
-# Iterating through songs in playlist
-playlist_items = get_playlist_items(playlist_id)
-song_index = 1
-try:
-    for item in playlist_items:             # item contains track, along with position info relative to playlist
-        track = item["track"]               # Track info
-        if not track:
-            continue
+    # Populate playlist basic information
+    playlists[playlist_id] = {
+        "playlist_name": playlist_name,
+        "playlist_art_url": playlist_info["images"][0]["url"] if playlist_info["images"] else None
+    }
 
-        # Song-Playlist relationship
-        if (track["id"], playlist_id) not in song_playlist:
-            song_playlist[(track["id"], playlist_id)] = {
-                "dateAdded": item["added_at"],
-                "songOrder": song_index
-            } 
-        # Song Entity and Other Relationships   
-        save_song(track)
+    # Iterating through songs in playlist
+    playlist_items = get_playlist_items(playlist_id, sp)
+    try:
+        for song_index, item in enumerate(playlist_items, start=1):             # item contains track, along with position info relative to playlist
+            track = item["track"]               # Track info
+            if not track:
+                continue
 
-        # Checkpointing
-        if song_index % 50 == 0:
-            print(f"✅ Checkpointing...")
-            checkpoint()
+            # Song-Playlist relationship
+            if (track["id"], playlist_id) not in song_playlist:
+                song_playlist[(track["id"], playlist_id)] = {
+                    "dateAdded": item["added_at"],
+                    "songOrder": song_index
+                } 
+            # Song Entity and Other Relationships   
+            save_song(track)
 
-        song_index += 1
-except Exception as e:
-    print(f"⚠️ Error occurred: {e}\n")
-    print(f"✅ Checkpointing...")
+            # Checkpointing
+            if song_index % 50 == 0:
+                print(f"✅ Checkpointing...")
+                checkpoint()
+
+            song_index += 1
+    except Exception as e:
+        print(f"⚠️ Error occurred: {e}\n")
+        print(f"✅ Checkpointing...")
+        checkpoint()
+
     checkpoint()
+    print(f"✅ Successfully saved all playlists from {playlist_name}. Saved {len(songs)} songs total\n")
 
-checkpoint()
-print(f"✅ Successfully saved all playlists from {playlist_name}. Saved {len(songs)} songs\n")
+if __name__ == "__main__":
+    main()
