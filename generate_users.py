@@ -40,7 +40,6 @@ def main():
     print("🎲 Generating random users...")
     raw = get_random_users(100)
     users = format_users(raw)
-    print(users[1])
 
     with open(f"{DATA_DIR}/users.json", "w") as f:
         json.dump(users, f, indent=2)
