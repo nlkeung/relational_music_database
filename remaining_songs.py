@@ -1,5 +1,5 @@
 """
-This script handles all remaining songs from songs_to_check.json, including all attributes and relationships with
+This script handles all remaining songs from songs_to_check.json, including all attributes and relationships with artists.
 
 """
 import spotipy
@@ -9,7 +9,6 @@ import json
 import time
 import os
 
-from songs_from_playlist import save_song
 
 # Initialize globals
 songs = {}
@@ -35,7 +34,8 @@ def load_data():
         with open(f"{DATA_DIR}/songs_to_check.json", "r") as f:
             songs_to_check = set(json.load(f))
     except FileNotFoundError:
-        songs_to_check = set()
+        print(f"❌ No songs_to_check.json file found.")
+        exit()
 
     # Artists To Check (to further populate artists.json) - set
     try:
