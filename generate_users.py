@@ -26,13 +26,25 @@ def get_random_users(n=100):
 
 def format_users(raw_users):
     users = {}
+    last_id = 0
     for i, u in enumerate(raw_users):
         user_id = i + 1  # or use UUIDs if you prefer
         users[user_id] = {
             "username": u["login"]["username"],
             "firstName": u["name"]["first"],
             "lastName": u["name"]["last"],
-            "profilePic": u["picture"]["large"],
+            "userArtURL": u["picture"]["large"],
+        }
+        last_id = user_id
+
+    # Add real users that created our seed playlists
+    usernames = ["Billboard", "Trap Nation", "Drake", "swift_fan"]
+    for i, u in enumerate(usernames, start=1):
+        users[i+last_id] = {
+            "username": u,
+            "firstName": r"\N",
+            "lastName": r"\N",
+            "userArtURL": r"\N"
         }
     return users
 
