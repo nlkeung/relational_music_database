@@ -1,5 +1,6 @@
 # Checkpoints / data
 data/
+output/
 
 # Python cache
 __pycache__/
@@ -15,3 +16,7 @@ venv/
 
 # OS files
 .DS_Store
+
+# Editor/Swap Files
+*.swp
+*~
