@@ -84,8 +84,8 @@ CREATE TABLE CreatesPlaylist (
 );
 
 CREATE TABLE InPlaylist (
-    PlaylistID INT REFERENCES Playlist(PlaylistID) ON DELETE CASCADE,
     SongID INT REFERENCES Song(SongID) ON DELETE CASCADE,
+    PlaylistID INT REFERENCES Playlist(PlaylistID) ON DELETE CASCADE,
     DateAdded DATE DEFAULT CURRENT_DATE CHECK (DateAdded <= CURRENT_DATE),
     SongOrder INT CHECK (SongOrder >= 1),
     PRIMARY KEY (PlaylistID, SongID)
@@ -97,7 +97,7 @@ CREATE TABLE FollowsPlaylist (
     PRIMARY KEY (UserID, PlaylistID)
 );
 
-CREATE TABLE Likes (
+CREATE TABLE LikesSong (
     UserID INT REFERENCES "User"(UserID) ON DELETE CASCADE,
     SongID INT REFERENCES Song(SongID) ON DELETE CASCADE,
     PRIMARY KEY (UserID, SongID)
