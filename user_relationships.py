@@ -106,7 +106,8 @@ except FileNotFoundError:
 
 skip_IDs = set(real_playlistIDs.values())
 for p_id in playlists_df["playlistID"]:
-    if p_id in real_playlistIDs:
+    if p_id in skip_IDs:
+        print(f"⚠️ Randomly selected real playlist. Skipping...")
         continue
     # Sample random songs
     songs_to_add = songs_df.sample(random.randint(0, 100))["songID"].tolist()
