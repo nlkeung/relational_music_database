@@ -42,7 +42,7 @@ def format_users(raw_users):
     for i, u in enumerate(usernames, start=1):
         users[i+last_id] = {
             "username": u,
-            "firstName": r"\N",
+            "firstName": f"{u}",
             "lastName": r"\N",
             "userArtURL": r"\N"
         }
