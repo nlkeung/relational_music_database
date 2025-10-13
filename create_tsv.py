@@ -82,6 +82,7 @@ try:
         song_artist = [pair.split("|") for pair in raw]
         print(f"✅ Successfully loaded song_artist.json")
     df = pd.DataFrame(song_artist, columns=["songID", "artistID"])
+    df = df.reindex(columns = ["artistID", "songID"])   # Reorder to match schema
     
     # Saving
     song_artist_path = os.path.join(OUTPUT_DIR, "performs.tsv")

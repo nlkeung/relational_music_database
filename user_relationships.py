@@ -148,7 +148,9 @@ for user_id in users_df["userID"]:
         if (user_id, p_id) not in follows_playlist:
             follows_playlist.add((user_id, p_id))
 
-followsPlaylist_df = pd.DataFrame(list(follows_playlist), columns=["userID", "playlistID"])
+follows_playlist_list = list(follows_playlist)
+follows_playlist_list.sort(key=lambda pair:pair[0])
+followsPlaylist_df = pd.DataFrame(follows_playlist_list, columns=["userID", "playlistID"])
 
 fol_play_path = os.path.join(DATA_DIR, "followsPlaylist.tsv")
 followsPlaylist_df.to_csv(fol_play_path, sep='\t', index=False)
