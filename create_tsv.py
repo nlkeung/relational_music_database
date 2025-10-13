@@ -67,7 +67,7 @@ genres_df = pd.DataFrame({
 tsv_path = os.path.join(OUTPUT_DIR, "genres.tsv")
 genres_df.to_csv(tsv_path, sep="\t", index=False)
 if os.path.exists(tsv_path):
-    print(f"✅ Successfully saved {entity} in {tsv_path}")
+    print(f"✅ Successfully saved genres in {tsv_path}")
 
 
 # ----- RELATIONSHIPS -----
