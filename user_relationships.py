@@ -1,7 +1,7 @@
 """
 This script handles synthetic user data. It uses user.tsv, song.tsv and artist.tsv to create playlists,
 follow playlists, like songs, follow artists, and follow other users. This will also finish creating
-playlists.tsv. 
+playlists.tsv. Does not save intermediate .jsons, as re-running could create stale/contradictory information
 
 Input Files: users.tsv, song.tsv, artist.tsv, song_playlist.json
 Output Files: playlist.tsv, createsPlaylist.tsv, followsPlaylist.tsv, inPlaylist.tsv, likesSong.tsv, followsArtist.tsv, and followsUser.tsv.
@@ -10,7 +10,6 @@ Output Files: playlist.tsv, createsPlaylist.tsv, followsPlaylist.tsv, inPlaylist
 import os
 import pandas as pd
 import json
-import numpy as np
 from datetime import datetime, timedelta
 import random
 
@@ -24,27 +23,27 @@ songs_df = pd.read_csv(f"{DATA_DIR}/songs.tsv", sep="\t")
 artists_df = pd.read_csv(f"{DATA_DIR}/artists.tsv", sep="\t")
 
 # Load JSON info
-with open("data/playlists.json", "r") as f:
-    playlists = json.load(f)
-
 try:
-    with open("data/user_playlist.json", "r") as f:
-        raw = json.load(f)
-        user_playlist = set(tuple(parts.split('|')) for parts in raw)
+    with open("data/playlists.json", "r") as f:
+        playlists = json.load(f)
 except FileNotFoundError:
-    user_playlist = set()
+    print(f"⚠️ playlists.json not found. Initializing empty dict")
+    playlists = {}
+
 
 # Create Playlists
 print(f"----- Playlist -----")
+
+user_playlist = set()                       # To track playlist creators
+
 NUM_NEW_PLAYLISTS = 16
 playlist_names = [f"random_mix_{i}" for i in range(1, NUM_NEW_PLAYLISTS+1)]
-excluded_user_ids = [101, 102, 103, 104]    # real users who created playlists
+excluded_user_ids = [101, 102, 103, 104]    # Real users who created playlists
 eligible_users = users_df[~users_df["userID"].isin(excluded_user_ids)]
 
 print("Generating synthetic playlists...")
 for i, name in enumerate(playlist_names, start=1):
     creator = eligible_users.sample(1).iloc[0]
-    created_date = datetime(2022,1,1) + timedelta(days=random.randint(0, 1000))
     
     playlist_id = str(i)
     if playlist_id not in playlists:
@@ -56,10 +55,7 @@ for i, name in enumerate(playlist_names, start=1):
         user_playlist.add((creator["userID"], playlist_id))
         print(f"Added playlist {name}")
 
-# Save Playlist as JSON and TSV
-with open("data/playlists.json", "w") as f:
-    json.dump(playlists, f)
-    print(f"✅ Successfully saved playlists.json. Total playlists: {len(playlists)}")
+# Save Playlist as TSV
 playlists_df = pd.DataFrame.from_dict(playlists, orient="index")
 playlists_df.index.name = "playlistID"
 playlists_df.reset_index(inplace=True)
@@ -69,7 +65,8 @@ playlists_df.to_csv(playlists_path, sep="\t", index=False)
 if os.path.exists(playlists_path):
     print(f"✅ Successfully saved playlists.tsv\n")
 
-# Creates Playlist (User - Playlist)
+
+# CreatesPlaylist (User - Playlist)
 print(f"----- createsPlaylist -----")
 # Real playlists
 real_creators = ["Billboard", "Trap Nation", "Drake", "swift_fan"]
@@ -89,22 +86,23 @@ for user in real_creators:
     if (IDs[user], real_playlistIDs[user]) not in user_playlist:
         user_playlist.add((IDs[user], real_playlistIDs[user]))
 
-with open("data/user_playlist.json", "w") as f:
-    json.dump([f"{k[0]}|{k[1]}" for k in user_playlist], f)
-    print(f"✅ Successfully saved user_playlist.json")
-
 createsPlaylist = pd.DataFrame(user_playlist, columns=["userID", "playlistID"])
 createsPlaylist_path = os.path.join(DATA_DIR, "createsPlaylist.tsv")
 createsPlaylist.to_csv(createsPlaylist_path, sep="\t", index=False)
 if os.path.exists(createsPlaylist_path):
     print(f"✅ Successfully saved createsPlaylist.tsv\n")
 
+
 # Song - Playlist
 print(f"----- inPlaylist -----")
 # Load song_playlist.json
-with open("data/song_playlist.json", "r") as f:
-    raw = json.load(f)
-    song_playlist = {tuple(k.split('|')) : v for k, v in raw.items()}
+try:
+    with open("data/song_playlist.json", "r") as f:
+        raw = json.load(f)
+        song_playlist = {tuple(k.split('|')) : v for k, v in raw.items()}
+except FileNotFoundError:
+    print(f"⚠️ song_playlist.json not found. Initializing empty dict")
+    song_playlist = {}
 
 skip_IDs = set(real_playlistIDs.values())
 for p_id in playlists_df["playlistID"]:
@@ -118,14 +116,10 @@ for p_id in playlists_df["playlistID"]:
     for s_id in songs_to_add:
         if (s_id, p_id) not in song_playlist:
             song_playlist[(s_id, p_id)] = {
-                "dateAdded": (datetime(2025, 10, 11) - timedelta(days=random.randint(0, 750))).strftime("%Y-%m-%d"),
+                "dateAdded": (datetime(2025, 10, 11)).strftime("%Y-%m-%d"),
                 "songOrder": song_pos
             }
             song_pos += 1
-
-with open("data/song_playlist.json", "w") as f:
-    json.dump({ f"{k[0]}|{k[1]}":v for k, v in song_playlist.items() }, f)
-print(f"✅ Successfully saved song_playlist.json")
 
 in_playlist_df = pd.DataFrame([
     {"songID": k[0], "playlistID": k[1], **v}
