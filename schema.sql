@@ -13,8 +13,6 @@ CREATE TABLE Song (
     SongTitle VARCHAR(100) NOT NULL,
     Duration_ms INT CHECK (Duration_ms > 0),
     SongReleaseDate DATE CHECK (SongReleaseDate <= CURRENT_DATE),
-    Tempo NUMERIC(6,3) CHECK (Tempo > 0),
-    Valence NUMERIC(4,3) CHECK (Valence >= 0 AND Valence <= 1),
     SongPopularity INT CHECK (SongPopularity BETWEEN 0 AND 100),
     SongArtURL VARCHAR(500)
 );
@@ -36,6 +34,7 @@ CREATE TABLE Album (
 -- Note: User is a reserved keyword, so we use double quotes.
 CREATE TABLE "User" (
     UserID SERIAL PRIMARY KEY,
+    Username VARCHAR(100) UNIQUE NOT NULL,
     FirstName VARCHAR(100) NOT NULL,
     LastName VARCHAR(100),
     UserArtURL VARCHAR(500)
@@ -44,7 +43,6 @@ CREATE TABLE "User" (
 CREATE TABLE Playlist (
     PlaylistID SERIAL PRIMARY KEY,
     PlaylistName VARCHAR(100) NOT NULL,
-    CreationDate DATE NOT NULL DEFAULT CURRENT_DATE CHECK (CreationDate <= CURRENT_DATE),
     PlaylistArtURL VARCHAR(500)
 );
 
@@ -61,13 +59,13 @@ CREATE TABLE Performs (
 -- Every artist must have a genre (total participation)
 CREATE TABLE IsGenre (
     ArtistID INT REFERENCES Artist(ArtistID) ON DELETE CASCADE,
-    GenreID INT REFERENCES Genre(GenreID),
+    GenreID INT REFERENCES Genre(GenreID) ON DELETE CASCADE,
     PRIMARY KEY (ArtistID, GenreID)
 );
 
 CREATE TABLE InAlbum (
-    AlbumID INT REFERENCES Album(AlbumID) ON DELETE CASCADE,
     SongID INT REFERENCES Song(SongID) ON DELETE CASCADE,
+    AlbumID INT REFERENCES Album(AlbumID) ON DELETE CASCADE,
     TrackNumber INT CHECK (TrackNumber >= 1),
     PRIMARY KEY (AlbumID, SongID)
 );
