@@ -27,4 +27,4 @@ SELECT DISTINCT pl.PlaylistName
 FROM Playlists pl
 JOIN InPlaylist ip ON pl.PlaylistID = ip.PlaylistID
 JOIN Songs s ON s.SongID = ip.SongID
-WHERE s.SongReleaseDate > '2023-01-01';
+WHERE s.SongReleaseDate > '2020-01-01';
