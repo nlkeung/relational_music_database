@@ -220,45 +220,53 @@ def main():
     # Load saved JSONs
     load_data()
 
-    playlist_id = "6UeSakyzhiEt4NB3UAd6NQ"
-    playlist_info = sp.playlist(playlist_id)
-    playlist_name = playlist_info["name"]
+    # Playlists information
+    spotify_ids = {
+        "Billboard Top 100": "6UeSakyzhiEt4NB3UAd6NQ",
+        "Trap Nation": "0NCspsyf0OS4BsPgGhkQXM",
+        "OVO Sound": "0GsvYNj45QjR245EWqgfDs",
+        "Eras Tour Setlist": "6qSYIKJihVKpWr2HDeHjxS"
+    }
+    for playlist_name, playlist_id in spotify_ids.items():
+        
+        print(f"Fetching playlist: {playlist_name}")
+        playlist_info = sp.playlist(playlist_id)
 
-    # Populate playlist basic information
-    if playlist_id not in playlists:
-        playlists[playlist_id] = {
-            "playlist_name": playlist_name,
-            "playlist_art_url": playlist_info["images"][0]["url"] if playlist_info["images"] else None
-        }
+        # Populate playlist basic information
+        if playlist_id not in playlists:
+            playlists[playlist_id] = {
+                "playlist_name": playlist_name,
+                "playlist_art_url": playlist_info["images"][0]["url"] if playlist_info["images"] else None
+            }
 
-    # Iterating through songs in playlist
-    playlist_items = get_playlist_items(playlist_id, sp)
-    try:
-        for song_index, item in enumerate(playlist_items, start=1):             # item contains track, along with position info relative to playlist
-            track = item["track"]               # Track info
-            if not track:
-                continue
+        # Iterating through songs in playlist
+        playlist_items = get_playlist_items(playlist_id, sp)
+        try:
+            for song_index, item in enumerate(playlist_items, start=1):             # item contains track, along with position info relative to playlist
+                track = item["track"]               # Track info
+                if not track:
+                    continue
 
-            # Song-Playlist relationship
-            if (track["id"], playlist_id) not in song_playlist:
-                song_playlist[(track["id"], playlist_id)] = {
-                    "dateAdded": item["added_at"],
-                    "songOrder": song_index
-                } 
-            # Song Entity and Other Relationships   
-            save_song(track, sp)
+                # Song-Playlist relationship
+                if (track["id"], playlist_id) not in song_playlist:
+                    song_playlist[(track["id"], playlist_id)] = {
+                        "dateAdded": item["added_at"],
+                        "songOrder": song_index
+                    } 
+                # Song Entity and Other Relationships   
+                save_song(track, sp)
 
-            # Checkpointing
-            if song_index % 50 == 0:
-                checkpoint()
+                # Checkpointing
+                if song_index % 50 == 0:
+                    checkpoint()
 
-            song_index += 1
-    except Exception as e:
-        print(f"⚠️ Error occurred: {e}\n")
+                song_index += 1
+        except Exception as e:
+            print(f"⚠️ Error occurred: {e}\n")
+            checkpoint()
+
         checkpoint()
-
-    checkpoint()
-    print(f"✅ Successfully saved all playlists from {playlist_name}. Saved {len(songs)} songs total\n")
+        print(f"✅ Successfully saved all playlists from {playlist_name}. Saved {len(songs)} songs total\n")
 
 if __name__ == "__main__":
     main()
