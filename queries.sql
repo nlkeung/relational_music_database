@@ -9,7 +9,7 @@ JOIN Songs s ON p.SongID = s.SongID
 WHERE 
     u.FirstName = 'Lukas'
     AND u.LastName = 'Robert'
-    AND s.Popularity >= 90;
+    AND s.SongPopularity >= 90;
 
 -- Query 2: Aggregation
 -- Find the top 5 artists by average song popularity
@@ -25,6 +25,6 @@ LIMIT 5;
 -- Find playlists that contain songs released before 2020
 SELECT DISTINCT pl.PlaylistName
 FROM Playlists pl
-JOIN InPlaylists ip ON pl.PlaylistID = ip.PlaylistID
+JOIN InPlaylist ip ON pl.PlaylistID = ip.PlaylistID
 JOIN Songs s ON s.SongID = ip.SongID
 WHERE s.SongReleaseDate > '2023-01-01';
