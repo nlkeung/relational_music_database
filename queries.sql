@@ -22,9 +22,9 @@ ORDER BY AvgPopularity DESC
 LIMIT 5;
 
 -- Query 3: Filter + Join
--- Find playlists that contain songs released before 2020
+-- Find playlists that contain songs released before 2019
 SELECT DISTINCT pl.PlaylistName
 FROM Playlists pl
 JOIN InPlaylist ip ON pl.PlaylistID = ip.PlaylistID
 JOIN Songs s ON s.SongID = ip.SongID
-WHERE s.SongReleaseDate > '2020-01-01';
+WHERE s.SongReleaseDate > '1999-01-01';
