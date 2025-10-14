@@ -1,10 +1,10 @@
 -- Entities
-\copy Artist FROM 'output/artists.tsv' DELIMITER E'\t' CSV HEADER;
-\copy Song FROM 'output/songs.tsv' DELIMITER E'\t' CSV HEADER;
-\copy Genre FROM 'output/genres.tsv' DELIMITER E'\t' CSV HEADER;
-\copy Album FROM 'output/albums.tsv' DELIMITER E'\t' CSV HEADER;
-\copy "User" FROM 'output/users.tsv' DELIMITER E'\t' CSV HEADER;
-\copy Playlist FROM 'output/playlists.tsv' DELIMITER E'\t' CSV HEADER;
+\copy Artists FROM 'output/artists.tsv' DELIMITER E'\t' CSV HEADER;
+\copy Songs FROM 'output/songs.tsv' DELIMITER E'\t' CSV HEADER;
+\copy Genres FROM 'output/genres.tsv' DELIMITER E'\t' CSV HEADER;
+\copy Albums FROM 'output/albums.tsv' DELIMITER E'\t' CSV HEADER;
+\copy "Users" FROM 'output/users.tsv' DELIMITER E'\t' CSV HEADER;
+\copy Playlists FROM 'output/playlists.tsv' DELIMITER E'\t' CSV HEADER;
 
 --  Relationships
 \copy Performs FROM 'output/performs.tsv' DELIMITER E'\t' CSV HEADER;
